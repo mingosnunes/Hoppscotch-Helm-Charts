@@ -14,6 +14,10 @@ spec:
   template:
     spec:
       restartPolicy: OnFailure
+      {{- with .Values.community.podSecurityContext }}
+      securityContext:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
       {{- if not .Values.community.config.database.external }}
       initContainers:
       - name: wait-for-postgres
@@ -27,6 +31,10 @@ spec:
               sleep 2
             done
             echo "PostgreSQL is ready"
+        {{- with .Values.community.securityContext }}
+        securityContext:
+          {{- toYaml . | nindent 10 }}
+        {{- end }}
       {{- end }}
       containers:
       - name: db-migration
@@ -44,3 +52,7 @@ spec:
             {{- else }}
             value: "postgresql://{{ .Values.community.config.postgresql.username }}:{{ .Values.community.config.postgresql.password }}@{{ .Release.Name }}-postgresql:5432/{{ .Values.community.config.postgresql.database }}?schema=public"
             {{- end }}
+        {{- with .Values.community.securityContext }}
+        securityContext:
+          {{- toYaml . | nindent 10 }}
+        {{- end }}

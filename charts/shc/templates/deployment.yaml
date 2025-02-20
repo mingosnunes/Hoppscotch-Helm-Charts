@@ -24,6 +24,10 @@ spec:
         rollme: {{ randAlphaNum 5 | quote }}
     spec:
       serviceAccountName: {{ .Release.Name }}-sa
+      {{- with .Values.community.podSecurityContext }}
+      securityContext:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
       initContainers:
       {{- if not .Values.community.config.database.external }}
       - name: wait-for-postgres
@@ -35,6 +39,10 @@ spec:
             until pg_isready -h {{ .Release.Name }}-postgresql -p 5432 -U {{ .Values.community.config.postgresql.username }}; do
               sleep 2
             done
+        {{- with .Values.community.securityContext }}
+        securityContext:
+          {{- toYaml . | nindent 10 }}
+        {{- end }}
       {{- end }}
       - name: wait-for-migration
         image: bitnami/kubectl:latest
@@ -52,6 +60,10 @@ spec:
               echo "Migration not yet completed. Retrying in 2 seconds..."
               sleep 2
             done
+        {{- with .Values.community.securityContext }}
+        securityContext:
+          {{- toYaml . | nindent 10 }}
+        {{- end }}
       containers:
         - name: community
           image: "{{ .Values.community.image.repository }}:{{ .Values.community.image.tag }}"
@@ -77,9 +89,13 @@ spec:
           {{- end }}
           resources:
             {{- toYaml .Values.community.resources | nindent 12 }}
+          {{- with .Values.community.securityContext }}
+          securityContext:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
       {{- if .Values.community.affinity.enabled }}
       affinity:
-        {{- if .Values.community.affinity.nodeAffinity}}
+        {{- if .Values.community.affinity.nodeAffinity.enabled}}
         nodeAffinity:
           requiredDuringSchedulingIgnoredDuringExecution:
             nodeSelectorTerms:
@@ -94,10 +110,10 @@ spec:
         {{- end }}
         {{- with .Values.community.affinity.tolerations }}
         toleration: 
-          {{ . | toYaml | nindent 8 }}
+          {{- . | toYaml | nindent 10 -}}
         {{- end }}
         {{- with .Values.community.affinity.nodeSelector }}
         nodeSelector: 
-          {{ . | toYaml | nindent 8 }}
+          {{- . | toYaml | nindent 10 -}}
         {{- end }}
       {{- end }}
