@@ -38,6 +38,7 @@ spec:
           - |
             echo "Running database migrations..."
             export PNPM_HOME=/tmp/.pnpm
+            mkdir -p $PNPM_HOME
             pnpx prisma migrate deploy
         env:
           - name: DATABASE_URL
