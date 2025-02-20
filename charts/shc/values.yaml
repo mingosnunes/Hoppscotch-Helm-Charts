@@ -19,6 +19,19 @@ community:
   migration:
     upgradeEnabled: false # If true, the migration job will run on every helm upgrade
 
+  affinity: 
+    enabled: false
+    
+    nodeAffinity:
+      enabled: false
+      nodeHostnames: "node-1,node-2" # Example: "node-3,node-4"
+    
+    tolerations: []
+    nodeSelector: {}
+
+  # Env overrides
+  envOverrides: []
+
   config:
     database:
       external: false # Flag to use external DB, if false, it will use the internal postgresql created by the helm chart
@@ -48,9 +61,6 @@ community:
       ttl: 60
       max: 100
 
-    affinityEnabled: false
-    nodeHostnames: "node-1,node-2" # Example: "node-3,node-4"
-
     authjwt:
       sessionSecret: "dummySessionSecret"
       jwtSecret: "dummyJwtSecret"
@@ -59,6 +69,7 @@ community:
       refreshTokenValidity: "1d"
       accessTokenValidity: "1d"
       dataEncryptionKey: "data encryption key with 32 char"
+      allowSecureCookies: false
 
     urls:
       base: "http://frontend.example.com"

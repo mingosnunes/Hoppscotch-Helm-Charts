@@ -71,10 +71,15 @@ spec:
           envFrom:
             - configMapRef:
                 name: {{ .Release.Name }}-community-config
+          {{- with .Values.community.envOverrides }}
+          env:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
           resources:
             {{- toYaml .Values.community.resources | nindent 12 }}
-      {{- if .Values.community.config.affinityEnabled }}
-      affinity: 
+      {{- if .Values.community.affinity.enabled }}
+      affinity:
+        {{- if .Values.community.affinity.nodeAffinity}}
         nodeAffinity:
           requiredDuringSchedulingIgnoredDuringExecution:
             nodeSelectorTerms:
@@ -82,8 +87,17 @@ spec:
                   - key: "kubernetes.io/hostname"
                     operator: In
                     values:
-                      {{- $nodeHostnames := .Values.community.config.nodeHostnames | split "," }}
+                      {{- $nodeHostnames := .Values.community.affinity.nodeAffinity.nodeHostnames | split "," }}
                       {{- range $node := $nodeHostnames }}
                       - "{{ $node }}"
                       {{- end }}
+        {{- end }}
+        {{- with .Values.community.affinity.tolerations }}
+        toleration: 
+          {{ . | toYaml | nindent 8 }}
+        {{- end }}
+        {{- with .Values.community.affinity.nodeSelector }}
+        nodeSelector: 
+          {{ . | toYaml | nindent 8 }}
+        {{- end }}
       {{- end }}
