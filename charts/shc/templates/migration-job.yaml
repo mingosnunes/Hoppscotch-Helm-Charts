@@ -37,19 +37,18 @@ spec:
           - -c
           - |
             echo "Running database migrations..."
+            export PNPM_HOME=/tmp/.pnpm
             pnpx prisma migrate deploy
         env:
           - name: DATABASE_URL
             {{- if .Values.community.config.database.external }}
             value: {{ .Values.community.config.database.url | quote }}
-            {{- else if eq .Values.community.config.database.url "" }}
-            valueFrom:
-              secretKeyRef:
-                name: hoppscotch-db-rw-app
-                key: uri
             {{- else }}
             value: "postgresql://{{ .Values.community.config.postgresql.username }}:{{ .Values.community.config.postgresql.password }}@{{ .Release.Name }}-postgresql:5432/{{ .Values.community.config.postgresql.database }}?schema=public"
             {{- end }}
+          {{- with .Values.community.envOverrides }}
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
         {{- with .Values.community.securityContext }}
         securityContext:
           {{- toYaml . | nindent 10 }}
